@@ -28,17 +28,40 @@ The system is designed around a **Microservices** architecture using a "Hot/Cold
 
 ## 📍 Current Progress
 
-We are currently in the **Infrastructure & Ingestion Phase**.
+We are currently in the **Ingestion & Data Pipeline Phase**.
 
 ### ✅ Phase 1: Foundation & Contracts
 - [x] **Infrastructure as Code:** Defined `docker-compose.yml` to orchestrate Redis (Hot Store), MongoDB (Cold Store), and RedisInsight (GUI).
 - [x] **API Contracts:** Defined `rideshare.proto` for `DriverService` and `RiderService` to enforce strict typing between client/server.
 - [x] **Code Generation:** Implemented the Python gRPC compilation pipeline.
 
-### 🚧 Phase 2: Driver Ingestion Service (In Progress)
-- [ ] **Service Implementation:** Build the `DriverService` gRPC server.
-- [ ] **Redis Integration:** Connect the Python backend to the Redis Geospatial index.
-- [ ] **End-to-End Verification:** Validate the `UpdateLocation` stream from Client → Server → Redis.
+### ✅ Phase 2: Driver Ingestion Service
+- [x] **Service Implementation:** Built the `DriverService` gRPC server to handle location streams.
+- [x] **Redis Integration:** Connected the Python backend to the Redis Geospatial index using `GEOADD`.
+- [x] **End-to-End Verification:** Validated the full pipeline:
+    1.  Python Client sends gRPC signal `UpdateLocation`.
+    2.  Server writes to Redis `active_drivers` key.
+    3.  Data verified visually in RedisInsight and via Redis CLI (`GEOPOS`).
+
+---
+
+## 🗺️ Project Roadmap (Next Steps)
+
+The following modules are planned for immediate development:
+
+### 🚧 Phase 3: The Rider Service (Query Layer)
+- [ ] Implement `GetNearestDrivers` RPC logic.
+- [ ] Utilize Redis `GEOSEARCH` to perform radius queries (e.g., "Find drivers within 3km").
+- [ ] "Hydrate" response data by fetching driver profiles from MongoDB.
+
+### 🚧 Phase 4: Simulation Engine
+- [ ] Build a multi-threaded Python script (`simulator.py`).
+- [ ] Simulate 100+ concurrent drivers moving realistically across the Los Angeles map.
+- [ ] Load test the ingestion pipeline.
+
+### 🚧 Phase 5: Visualization
+- [ ] Build a minimal React.js frontend.
+- [ ] Visualize moving driver markers in real-time using Mapbox/Leaflet.
 
 ---
 
@@ -61,4 +84,9 @@ To run the current version of the project:
     python3 -m venv venv
     source venv/bin/activate
     pip install -r requirements.txt
+    ```
+
+4.  **Run the Server:**
+    ```bash
+    python server.py
     ```

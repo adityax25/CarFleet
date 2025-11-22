@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x15proto/rideshare.proto\x12\trideshare\"/\n\x08Location\x12\x10\n\x08latitude\x18\x01 \x01(\x01\x12\x11\n\tlongitude\x18\x02 \x01(\x01\"B\n\x06\x44river\x12\x11\n\tdriver_id\x18\x01 \x01(\t\x12%\n\x08location\x18\x02 \x01(\x0b\x32\x13.rideshare.Location\"Z\n\x0cRiderRequest\x12\x10\n\x08rider_id\x18\x01 \x01(\t\x12%\n\x08location\x18\x02 \x01(\x0b\x32\x13.rideshare.Location\x12\x11\n\tradius_km\x18\x03 \x01(\x05\";\n\x15NearbyDriversResponse\x12\"\n\x07\x64rivers\x18\x01 \x03(\x0b\x32\x11.rideshare.Driver\"/\n\x0bLocationAck\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t2N\n\rDriverService\x12=\n\x0eUpdateLocation\x12\x11.rideshare.Driver\x1a\x16.rideshare.LocationAck\"\x00\x32`\n\x0cRiderService\x12P\n\x11GetNearestDrivers\x12\x17.rideshare.RiderRequest\x1a .rideshare.NearbyDriversResponse\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x15proto/rideshare.proto\x12\trideshare\"/\n\x08Location\x12\x10\n\x08latitude\x18\x01 \x01(\x01\x12\x11\n\tlongitude\x18\x02 \x01(\x01\"R\n\x06\x44river\x12\x11\n\tdriver_id\x18\x01 \x01(\t\x12%\n\x08location\x18\x02 \x01(\x0b\x32\x13.rideshare.Location\x12\x0e\n\x06status\x18\x03 \x01(\t\"Z\n\x0cRiderRequest\x12\x10\n\x08rider_id\x18\x01 \x01(\t\x12%\n\x08location\x18\x02 \x01(\x0b\x32\x13.rideshare.Location\x12\x11\n\tradius_km\x18\x03 \x01(\x05\";\n\x15NearbyDriversResponse\x12\"\n\x07\x64rivers\x18\x01 \x03(\x0b\x32\x11.rideshare.Driver\"/\n\x0bLocationAck\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t2N\n\rDriverService\x12=\n\x0eUpdateLocation\x12\x11.rideshare.Driver\x1a\x16.rideshare.LocationAck\"\x00\x32`\n\x0cRiderService\x12P\n\x11GetNearestDrivers\x12\x17.rideshare.RiderRequest\x1a .rideshare.NearbyDriversResponse\"\x00\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -34,15 +34,15 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_LOCATION']._serialized_start=36
   _globals['_LOCATION']._serialized_end=83
   _globals['_DRIVER']._serialized_start=85
-  _globals['_DRIVER']._serialized_end=151
-  _globals['_RIDERREQUEST']._serialized_start=153
-  _globals['_RIDERREQUEST']._serialized_end=243
-  _globals['_NEARBYDRIVERSRESPONSE']._serialized_start=245
-  _globals['_NEARBYDRIVERSRESPONSE']._serialized_end=304
-  _globals['_LOCATIONACK']._serialized_start=306
-  _globals['_LOCATIONACK']._serialized_end=353
-  _globals['_DRIVERSERVICE']._serialized_start=355
-  _globals['_DRIVERSERVICE']._serialized_end=433
-  _globals['_RIDERSERVICE']._serialized_start=435
-  _globals['_RIDERSERVICE']._serialized_end=531
+  _globals['_DRIVER']._serialized_end=167
+  _globals['_RIDERREQUEST']._serialized_start=169
+  _globals['_RIDERREQUEST']._serialized_end=259
+  _globals['_NEARBYDRIVERSRESPONSE']._serialized_start=261
+  _globals['_NEARBYDRIVERSRESPONSE']._serialized_end=320
+  _globals['_LOCATIONACK']._serialized_start=322
+  _globals['_LOCATIONACK']._serialized_end=369
+  _globals['_DRIVERSERVICE']._serialized_start=371
+  _globals['_DRIVERSERVICE']._serialized_end=449
+  _globals['_RIDERSERVICE']._serialized_start=451
+  _globals['_RIDERSERVICE']._serialized_end=547
 # @@protoc_insertion_point(module_scope)
