@@ -48,7 +48,7 @@ To run the current version of the project:
 
 1.  **Clone the repo:**
     ```bash
-    git clone [https://github.com/adityax25/CarFleet.git](https://github.com/adityax25/CarFleet.git)
+    git clone https://github.com/adityax25/CarFleet.git
     ```
 
 2.  **Start Infrastructure:**
