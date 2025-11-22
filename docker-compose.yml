@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  # 1. The "Hot" Database (Real-time Location)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # 2. The "Cold" Database (Profiles & History)
+  mongo:
+    image: mongo:6.0
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  # 3. GUI for Redis (To see the cars moving)
+  redis-insight:
+    image: redis/redisinsight:latest
+    ports:
+      - "5540:5540"
+    depends_on:
+      - redis
+
+volumes:
+  redis_data:
+  mongo_data:

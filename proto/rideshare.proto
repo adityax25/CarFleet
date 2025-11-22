@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package rideshare;
+
+// 1. Define the Data Structures (Messages)
+
+// A location coordinate
+message Location {
+  double latitude = 1;
+  double longitude = 2;
+}
+
+// Details about a driver
+message Driver {
+  string driver_id = 1;
+  Location location = 2;
+}
+
+// Request from a rider to find drivers
+message RiderRequest {
+  string rider_id = 1;
+  Location location = 2;
+  int32 radius_km = 3; // How far to search
+}
+
+// The list of nearest drivers found
+message NearbyDriversResponse {
+  repeated Driver drivers = 1; // "repeated" means a List[]
+}
+
+// 2. Define the Services (The API endpoints)
+
+// Service 1: The Driver app talks to this
+service DriverService {
+  // Drivers send a continuous stream of location updates
+  rpc UpdateLocation (Driver) returns (LocationAck) {}
+}
+
+message LocationAck {
+  bool success = 1;
+  string message = 2;
+}
+
+// Service 2: The Rider app talks to this
+service RiderService {
+  // Riders send one request, get one list of drivers back
+  rpc GetNearestDrivers (RiderRequest) returns (NearbyDriversResponse) {}
+}

@@ -1,0 +1,18 @@
+# 1. Ignore the Virtual Environment
+venv/
+env/
+.env
+
+# 2. Ignore Python Compiled Files
+__pycache__/
+*.py[cod]
+
+# 3. Ignore Docker Data
+mongo_data/
+redis_data/
+
+# 4. Mac System Files
+.DS_Store
+
+# 5. IDE Settings
+.vscode/
