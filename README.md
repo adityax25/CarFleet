@@ -4,7 +4,7 @@
 
 > *Note: This project is currently under active development. The "Current Progress" section below tracks the latest implemented features.*
 
-## 🏛️ Architecture Overview
+## Architecture Overview
 
 The system is designed around a **Microservices** architecture using a "Hot/Cold" data storage strategy:
 
@@ -13,7 +13,7 @@ The system is designed around a **Microservices** architecture using a "Hot/Cold
 * **Cold Storage (MongoDB):** Handles persistent data like driver profiles, trip history, and user metadata.
 * **Infrastructure:** Fully containerized using Docker and Docker Compose.
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Component | Technology |
 | :--- | :--- |
@@ -26,7 +26,7 @@ The system is designed around a **Microservices** architecture using a "Hot/Cold
 
 ---
 
-## 📍 Current Progress
+## Current Progress
 
 We are currently in the **Ingestion & Data Pipeline Phase**.
 
@@ -45,27 +45,27 @@ We are currently in the **Ingestion & Data Pipeline Phase**.
 
 ---
 
-## 🗺️ Project Roadmap (Next Steps)
+## Project Roadmap (Next Steps)
 
 The following modules are planned for immediate development:
 
-### 🚧 Phase 3: The Rider Service (Query Layer)
+### Phase 3: The Rider Service (Query Layer)
 - [ ] Implement `GetNearestDrivers` RPC logic.
 - [ ] Utilize Redis `GEOSEARCH` to perform radius queries (e.g., "Find drivers within 3km").
 - [ ] "Hydrate" response data by fetching driver profiles from MongoDB.
 
-### 🚧 Phase 4: Simulation Engine
-- [ ] Build a multi-threaded Python script (`simulator.py`).
+### Phase 4: Simulation Engine
+- [ ] Build a multi-threaded Python simulator script (`simulator.py`).
 - [ ] Simulate 100+ concurrent drivers moving realistically across the Los Angeles map.
 - [ ] Load test the ingestion pipeline.
 
-### 🚧 Phase 5: Visualization
+### Phase 5: Visualization
 - [ ] Build a minimal React.js frontend.
 - [ ] Visualize moving driver markers in real-time using Mapbox/Leaflet.
 
 ---
 
-## 🏃‍♂️ Local Setup
+## Local Setup
 
 To run the current version of the project:
 
