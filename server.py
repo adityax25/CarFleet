@@ -20,7 +20,7 @@ class DriverService(pb2_grpc.DriverServiceServicer):
         driver_id = request.driver_id
         lat = request.location.latitude
         lon = request.location.longitude
-        print(f"🚕 Receiving update: {driver_id} is at ({lat}, {lon})")
+        print(f"Receiving update: {driver_id} is at ({lat}, {lon})")
         
         # B. Save to Redis
         # GEOADD args: (key_name, (longitude, latitude, member_name))
@@ -31,7 +31,7 @@ class DriverService(pb2_grpc.DriverServiceServicer):
             return pb2.LocationAck(success=True, message="Location stored in Redis")
         
         except Exception as e:
-            print(f"❌ Error writing to Redis: {e}")
+            print(f"ERROR writing to Redis: {e}")
             return pb2.LocationAck(success=False, message=str(e))
 
 def serve():
