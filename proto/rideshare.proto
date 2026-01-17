@@ -21,7 +21,7 @@ message Driver {
 message RiderRequest {
   string rider_id = 1;
   Location location = 2;
-  int32 radius_km = 3; // How far to search
+  int32 radius_miles = 3; // How far to search
 }
 
 // The list of nearest drivers found

@@ -34,10 +34,47 @@ class DriverService(pb2_grpc.DriverServiceServicer):
             print(f"ERROR writing to Redis: {e}")
             return pb2.LocationAck(success=False, message=str(e))
 
+class RiderService(pb2_grpc.RiderServiceServicer):
+    
+    def GetNearestDrivers(self, request, context):
+        print(f"Searching for drivers within {request.radius_miles} miles of ({request.location.latitude}, {request.location.longitude})...")
+        try:
+            # GEORADIUS/GEOSEARCH instructions:
+            # Redis expects (longitude, latitude)
+            # unit='mi' for miles
+            # withcoord=True gives us the location back so we can pass it to the client
+            results = redis_client.geosearch(
+                name="active_drivers",
+                longitude=request.location.longitude,
+                latitude=request.location.latitude,
+                radius=request.radius_miles,
+                unit="mi",
+                withcoord=True
+            )
+            
+            # Request.results is a list of [member, (longitude, latitude)]
+            # We need to map this to [Driver(driver_id, Location(lat, lon))]
+            
+            nearby_drivers = []
+            for member, (r_lon, r_lat) in results:
+                # Convert back to standard (Lat, Lon) for the return object
+                loc = pb2.Location(latitude=r_lat, longitude=r_lon)
+                driver = pb2.Driver(driver_id=member, location=loc, status="AVAILABLE")
+                nearby_drivers.append(driver)
+                
+            print(f"Found {len(nearby_drivers)} drivers.")
+            return pb2.NearbyDriversResponse(drivers=nearby_drivers)
+
+        except Exception as e:
+            print(f"ERROR querying Redis: {e}")
+            # return empty list on error
+            return pb2.NearbyDriversResponse(drivers=[])
+
 def serve():
     # 3. Setup the gRPC Server
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     pb2_grpc.add_DriverServiceServicer_to_server(DriverService(), server)
+    pb2_grpc.add_RiderServiceServicer_to_server(RiderService(), server)
 
     # Open the port
     server.add_insecure_port('[::]:50051')
