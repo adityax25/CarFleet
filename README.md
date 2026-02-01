@@ -1,6 +1,6 @@
-# Car Fleet: Geospatial Ride-Sharing Engine 🚕
+# CarFleet: Geospatial Ride-Sharing Engine 🚕
 
-**Car Fleet** is a distributed backend system designed to simulate the core infrastructure of ride-sharing platforms. It handles high-throughput, real-time driver location streams and performs low-latency geospatial proximity searches.
+**CarFleet** is a distributed backend system designed to simulate the core infrastructure of ride-sharing platforms. It handles high-throughput, real-time driver location streams and performs low-latency geospatial proximity searches.
 
 ## Architecture Overview
 
@@ -16,6 +16,10 @@ The system follows a **Microservices** architecture:
 
 | Component | Technology |
 | :--- | :--- |
+| **Frontend Framework** | Next.js 15 (React 19) |
+| **Styling** | TailwindCSS v4 |
+| **Maps & Visualization** | Mapbox GL JS |
+| **State Management** | React Reference State (Ref) for 60fps Perf |
 | **Backend Language** | Python 3.10+ |
 | **API Protocol** | gRPC & Protobuf |
 | **Real-Time Store** | Redis (v7-alpine) |
@@ -28,12 +32,15 @@ The system follows a **Microservices** architecture:
 ### Prerequisites
 *   Docker & Docker Compose
 *   Python 3.9+
+*   Node.js 18+ (for Frontend)
 
 ### 1. Initialize Map Data (First Time Only)
 The system requires real-world map data for Los Angeles/California. Run the setup script to download and process the data:
 
 ```bash
+cd backend
 ./setup_osrm.sh
+cd ..
 ```
 *Note: This downloads ~500MB of data and may take a few minutes to process.*
 
@@ -44,31 +51,47 @@ Spin up the database and routing services:
 docker compose up -d
 ```
 
-### 3. Run the Backend
-Start the main gRPC server:
+### 3. Run the Backend & Simulator
+Navigate to the backend directory and start the services:
 
 ```bash
+cd backend
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 python server.py
-```
-
-### 4. Run Simulation
-Simulate 1000+ drivers moving around Los Angeles:
-
-```bash
+# In another terminal:
 python simulator.py
 ```
 
-## Features
+### 4. Run the Frontend
+Launch the Next.js web application:
 
-### Dynamic Search Radius
-The Rider Service implements an expanding search radius to balance speed and availability:
-1.  **0s**: Search within 0.5 miles.
-2.  **3s**: Expand to 1.5 miles.
-3.  **7s**: Expand to 3.0 miles.
-4.  **15s**: Expand to 5.0 miles (Max).
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-### Concurrency
-Uses Redis atomic locking (Lua scripts) to ensure a driver cannot be assigned to multiple riders simultaneously.
+## Comprehensive Feature List
+
+### 🖥️ Frontend (React & TypeScript)
+*   **High-Performance Rendering**: Uses `requestAnimationFrame` for buttery smooth 60fps car interpolation, bypassing React state for heavy animation loops.
+*   **3D Visualization**: Custom 3D SVG Car models that rotate and bank based on the vehicle's actual bearing.
+*   **Smart Camera**: "Cinematic Mode" automatically zooms and pans to frame the entire route (Pickup ➔ Dropoff) when a ride starts.
+*   **Premium UI/UX**:
+    *   **Radar Pulse**: "Scanning" animation during driver search.
+    *   **Trail Clearing**: Visual path "erasing" as the driver completes the route.
+    *   **Glassmorphism**: Modern, translucent UI panels.
+
+### 🚗 Simulation Engine
+*   **Massive Scale**: Capable of simulating 1000+ concurrent drivers in real-time.
+*   **Real-World Routing**: Drivers don't fly; they follow actual street geometry using OSRM (Open Source Routing Machine).
+*   **Scattered Traffic**: Algorithms distribute drivers realistically across local streets rather than clustering them on highways.
+
+### ⚡ Backend & Infrastructure
+*   **Microservices**: Fully decoupled Backend (Python) and Frontend (Node/Next.js).
+*   **gRPC Contracts**: Strict type safety between services using Protocol Buffers.
+*   **Geospatial Sharding**: Redis `GEOSEARCH` for O(log N) proximity lookups.
+*   **Atomic Locking**: Lua scripts ensure a driver cannot be double-booked by concurrent riders.
+*   **Dynamic Search Radius**: Search logic expands radius (0.5mi ➔ 5.0mi) over time if no drivers are found immediately.

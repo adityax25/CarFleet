@@ -439,7 +439,7 @@ export default function DriverMap() {
     // Helper: Route Fetcher
     async function fetchRoute(start: { lon: number, lat: number, address?: string }, end: { lon: number, lat: number, address?: string }) {
         try {
-            const res = await fetch(`/api/route?start=${start.lon},${start.lat}&end=${end.lon},${end.lat}`);
+            const res = await fetch(`/api/directions?start=${start.lon},${start.lat}&end=${end.lon},${end.lat}`);
             const data = await res.json();
             return data.routes?.[0];
         } catch {

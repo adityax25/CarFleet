@@ -32,7 +32,7 @@ services:
     ports:
       - "5001:5000"
     volumes:
-      - ./osrm-data:/data
+      - ./backend/osrm-data:/data
     command: osrm-routed --algorithm mld /data/california-latest.osrm
 
 volumes:
