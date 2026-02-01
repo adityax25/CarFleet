@@ -1,18 +1,27 @@
-# 1. Ignore the Virtual Environment
-venv/
-env/
-.env
-
-# 2. Ignore Python Compiled Files
+# Python
 __pycache__/
 *.py[cod]
+*$py.class
+venv/
+.env
 
-# 3. Ignore Docker Data
-mongo_data/
-redis_data/
-
-# 4. Mac System Files
+# MacOS
 .DS_Store
 
-# 5. IDE Settings
+# Docker/OSRM Data
+osrm-data/
+*.osrm*
+*.pbf
+
+# IDEs
 .vscode/
+.idea/
+
+# Frontend / Node
+node_modules/
+.next/
+*.log
+.npm
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

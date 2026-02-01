@@ -1,17 +1,16 @@
-# 🚕 Car Fleet: Geospatial Ride-Sharing Engine
+# Car Fleet: Geospatial Ride-Sharing Engine 🚕
 
-**Car Fleet** is a distributed backend system designed to simulate the core infrastructure of ride-sharing platforms like Uber or Lyft. The system is engineered to handle high-throughput, real-time driver location streams and perform low-latency geospatial proximity searches.
-
-> *Note: This project is currently under active development. The "Current Progress" section below tracks the latest implemented features.*
+**Car Fleet** is a distributed backend system designed to simulate the core infrastructure of ride-sharing platforms. It handles high-throughput, real-time driver location streams and performs low-latency geospatial proximity searches.
 
 ## Architecture Overview
 
-The system is designed around a **Microservices** architecture using a "Hot/Cold" data storage strategy:
+The system follows a **Microservices** architecture:
 
-* **Communication:** Services communicate via **gRPC** (Protocol Buffers) for low-latency, strict-contract messaging.
-* **Hot Storage (Redis):** Uses Redis Geospatial Indexing (`GEOADD`, `GEOSEARCH`) for sub-millisecond driver tracking and proximity queries.
-* **Cold Storage (MongoDB):** Handles persistent data like driver profiles, trip history, and user metadata.
-* **Infrastructure:** Fully containerized using Docker and Docker Compose.
+*   **Communication**: gRPC (Protocol Buffers) for low-latency, strict-contract messaging.
+*   **Hot Storage (Redis)**: Uses Redis Geospatial Indexing for sub-millisecond driver tracking and proximity queries.
+*   **Cold Storage (MongoDB)**: Handles persistent data like driver profiles and trip history.
+*   **Routing Engine (OSRM)**: Self-hosted Open Source Routing Machine for calculating realistic driving paths on actual street maps.
+*   **Infrastructure**: Fully containerized using Docker and Docker Compose.
 
 ## Tech Stack
 
@@ -21,72 +20,55 @@ The system is designed around a **Microservices** architecture using a "Hot/Cold
 | **API Protocol** | gRPC & Protobuf |
 | **Real-Time Store** | Redis (v7-alpine) |
 | **Persistent Store** | MongoDB (v6.0) |
+| **Routing Engine** | OSRM (Open Source Routing Machine) |
 | **DevOps** | Docker, Docker Compose |
-| **Testing** | RedisInsight, gRPCui |
 
----
+## Setup & Installation
 
-## Current Progress
+### Prerequisites
+*   Docker & Docker Compose
+*   Python 3.9+
 
-We are currently in the **Ingestion & Data Pipeline Phase**.
+### 1. Initialize Map Data (First Time Only)
+The system requires real-world map data for Los Angeles/California. Run the setup script to download and process the data:
 
-### ✅ Phase 1: Foundation & Contracts
-- [x] **Infrastructure as Code:** Defined `docker-compose.yml` to orchestrate Redis (Hot Store), MongoDB (Cold Store), and RedisInsight (GUI).
-- [x] **API Contracts:** Defined `rideshare.proto` for `DriverService` and `RiderService` to enforce strict typing between client/server.
-- [x] **Code Generation:** Implemented the Python gRPC compilation pipeline.
+```bash
+./setup_osrm.sh
+```
+*Note: This downloads ~500MB of data and may take a few minutes to process.*
 
-### ✅ Phase 2: Driver Ingestion Service
-- [x] **Service Implementation:** Built the `DriverService` gRPC server to handle location streams.
-- [x] **Redis Integration:** Connected the Python backend to the Redis Geospatial index using `GEOADD`.
-- [x] **End-to-End Verification:** Validated the full pipeline:
-    1.  Python Client sends gRPC signal `UpdateLocation`.
-    2.  Server writes to Redis `active_drivers` key.
-    3.  Data verified visually in RedisInsight and via Redis CLI (`GEOPOS`).
+### 2. Start Infrastructure
+Spin up the database and routing services:
 
----
+```bash
+docker compose up -d
+```
 
-## Project Roadmap (Next Steps)
+### 3. Run the Backend
+Start the main gRPC server:
 
-The following modules are planned for immediate development:
+```bash
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python server.py
+```
 
-### Phase 3: The Rider Service (Query Layer)
-- [ ] Implement `GetNearestDrivers` RPC logic.
-- [ ] Utilize Redis `GEOSEARCH` to perform radius queries (e.g., "Find drivers within 3km").
-- [ ] "Hydrate" response data by fetching driver profiles from MongoDB.
+### 4. Run Simulation
+Simulate 1000+ drivers moving around Los Angeles:
 
-### Phase 4: Simulation Engine
-- [ ] Build a multi-threaded Python simulator script (`simulator.py`).
-- [ ] Simulate 100+ concurrent drivers moving realistically across the Los Angeles map.
-- [ ] Load test the ingestion pipeline.
+```bash
+python simulator.py
+```
 
-### Phase 5: Visualization
-- [ ] Build a minimal React.js frontend.
-- [ ] Visualize moving driver markers in real-time using Mapbox/Leaflet.
+## Features
 
----
+### Dynamic Search Radius
+The Rider Service implements an expanding search radius to balance speed and availability:
+1.  **0s**: Search within 0.5 miles.
+2.  **3s**: Expand to 1.5 miles.
+3.  **7s**: Expand to 3.0 miles.
+4.  **15s**: Expand to 5.0 miles (Max).
 
-## Local Setup
-
-To run the current version of the project:
-
-1.  **Clone the repo:**
-    ```bash
-    git clone https://github.com/adityax25/CarFleet.git
-    ```
-
-2.  **Start Infrastructure:**
-    ```bash
-    docker compose up -d
-    ```
-
-3.  **Install Dependencies:**
-    ```bash
-    python3 -m venv venv
-    source venv/bin/activate
-    pip install -r requirements.txt
-    ```
-
-4.  **Run the Server:**
-    ```bash
-    python server.py
-    ```
+### Concurrency
+Uses Redis atomic locking (Lua scripts) to ensure a driver cannot be assigned to multiple riders simultaneously.

@@ -25,6 +25,16 @@ services:
     depends_on:
       - redis
 
+  # 4. Routing Engine (OSRM)
+  # Provides driving directions and route geometry
+  osrm:
+    image: osrm/osrm-backend
+    ports:
+      - "5001:5000"
+    volumes:
+      - ./osrm-data:/data
+    command: osrm-routed --algorithm mld /data/california-latest.osrm
+
 volumes:
   redis_data:
   mongo_data:

@@ -1,0 +1,39 @@
+{
+  "name": "car-fleet",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.14.3",
+    "@grpc/proto-loader": "^0.8.0",
+    "@mapbox/mapbox-gl-geocoder": "^5.1.2",
+    "@radix-ui/react-popover": "^1.1.15",
+    "@turf/along": "^7.3.3",
+    "@turf/length": "^7.3.3",
+    "@turf/turf": "^7.3.3",
+    "@types/mapbox-gl": "^3.4.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.563.0",
+    "mapbox-gl": "^3.18.1",
+    "next": "16.1.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-map-gl": "^8.1.0",
+    "tailwind-merge": "^3.4.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.6",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
