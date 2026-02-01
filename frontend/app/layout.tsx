@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "CarFleet",
-  description: "Premium Ride Sharing Simulator",
+  description: "Geospatial Ride-Sharing Engine",
 };
 
 export default function RootLayout({
