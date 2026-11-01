@@ -1,0 +1,16 @@
+[package]
+name = "carfleet-push"
+description = "Delivers server-initiated events to rider and driver apps"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+carfleet-proto.workspace = true
+carfleet-runtime.workspace = true
+tokio.workspace = true
+tonic.workspace = true
+tonic-health.workspace = true
+tracing.workspace = true

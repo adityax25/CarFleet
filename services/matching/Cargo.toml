@@ -1,0 +1,16 @@
+[package]
+name = "carfleet-matching"
+description = "Matches requested rides to nearby drivers"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+carfleet-proto.workspace = true
+carfleet-runtime.workspace = true
+tokio.workspace = true
+tonic.workspace = true
+tonic-health.workspace = true
+tracing.workspace = true

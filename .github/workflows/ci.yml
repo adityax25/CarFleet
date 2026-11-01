@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BUF_VERSION: "1.75.0"
+
+jobs:
+  proto:
+    name: Proto contracts
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Install Buf
+        run: |
+          curl -fsSL "https://github.com/bufbuild/buf/releases/download/v${BUF_VERSION}/buf-Linux-aarch64" -o /usr/local/bin/buf
+          chmod +x /usr/local/bin/buf
+      - name: Lint
+        run: buf lint
+      - name: Breaking change check
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            against=".git#branch=origin/${{ github.base_ref }}"
+          else
+            against=".git#ref=${{ github.event.before }}"
+          fi
+          buf breaking --against "${against}"
+
+  rust:
+    name: Rust services
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Format
+        run: cargo fmt --all --check
+      - name: Lint
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - name: Test
+        run: cargo test --workspace --locked
+
+  images:
+    name: Image ${{ matrix.service }}
+    runs-on: ubuntu-24.04-arm
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: location
+            dockerfile: services/location/Dockerfile
+            build-args: ""
+          - service: ride
+            dockerfile: docker/rust-service.Dockerfile
+            build-args: SERVICE=carfleet-ride
+          - service: matching
+            dockerfile: docker/rust-service.Dockerfile
+            build-args: SERVICE=carfleet-matching
+          - service: push
+            dockerfile: docker/rust-service.Dockerfile
+            build-args: SERVICE=carfleet-push
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      # The location image also compiles and runs the C++ unit tests.
+      - name: Build
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          build-args: ${{ matrix.build-args }}
+          push: false
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,scope=${{ matrix.service }},mode=max

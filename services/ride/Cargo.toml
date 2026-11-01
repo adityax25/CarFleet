@@ -1,0 +1,16 @@
+[package]
+name = "carfleet-ride"
+description = "Owns fare quotes and the ride lifecycle"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+carfleet-proto.workspace = true
+carfleet-runtime.workspace = true
+tokio.workspace = true
+tonic.workspace = true
+tonic-health.workspace = true
+tracing.workspace = true

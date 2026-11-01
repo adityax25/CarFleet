@@ -2,6 +2,8 @@
 
 **A cloud-native, real-time geospatial ride-sharing backend on AWS.**
 
+[![CI](https://github.com/adityax25/CarFleet/actions/workflows/ci.yml/badge.svg)](https://github.com/adityax25/CarFleet/actions/workflows/ci.yml)
+
 CarFleet is the matching engine behind a ride-sharing app. It tracks the live position of every active driver, finds the nearest available drivers for a rider in milliseconds, offers the ride to one driver at a time, and guarantees that no ride is ever assigned to two drivers, even when services crash mid-match.
 
 > **Status: early development.** The [Current Status](#current-status) section tracks exactly what is built versus planned. Nothing in this document describes capability that does not exist.
@@ -124,14 +126,15 @@ Planned architecture for the development environment:
 - Repository initialized
 - Domain model and ride state machine
 - API contracts in Protocol Buffers, with REST mappings for the public API, linted with Buf
+- Service skeletons: every service builds against the contracts and serves the standard gRPC health protocol
+- CI on arm64 runners: contract lint and breaking change checks, Rust format, lint, and tests, C++ build and tests, and container images
 
 ### In Progress
 
-- Service skeletons and CI builds
+- AWS foundation: cost guardrails, networking, ECS cluster, and CI driven deployments
 
 ### Upcoming
 
-- AWS foundation: cost guardrails, networking, ECS cluster, and CI driven deployments
 - Location Service: H3 sharded ingest and nearest-driver search on Valkey Cluster
 - Load simulator and observability, with a first benchmark
 - Ride Service: fares and the ride lifecycle on MongoDB
