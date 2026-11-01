@@ -1,0 +1,44 @@
+# C++ build output
+build/
+cmake-build-*/
+vcpkg_installed/
+compile_commands.json
+*.o
+*.a
+*.so
+
+# Rust build output
+target/
+
+# Generated Protocol Buffer code
+gen/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Secrets and local environment
+.env
+.env.*
+*.pem
+
+# OSRM map data
+*.osm.pbf
+*.osrm*
+
+# Frontend
+node_modules/
+dist/
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+*.log
