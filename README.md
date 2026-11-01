@@ -73,16 +73,20 @@ Planned architecture for the development environment:
 ## How a Ride Works
 
 ```
-  REQUESTED ──▶ MATCHING ──▶ DRIVER_ASSIGNED ──▶ IN_PROGRESS ──▶ COMPLETED
-                   │
-                   └──▶ NO_DRIVERS_FOUND          (any active state) ──▶ CANCELLED
+                       ┌─────────────── driver cancels: rematch ───────────────┐
+                       ▼                                                       │
+ REQUESTED ──▶ MATCHING ──▶ DRIVER_ASSIGNED ──▶ DRIVER_ARRIVED ──▶ IN_PROGRESS ──▶ COMPLETED
+                  │                │                  │
+                  ▼                └──────────────────┴──▶ CANCELLED (rider cancels or no-show)
+          NO_DRIVERS_FOUND
 ```
 
 1. The rider requests a fare quote. The price is computed and stored server side with an expiry, so the client never supplies a price.
 2. The rider confirms. The Ride Service records the ride and places a match request on the queue.
 3. The Matching Service finds nearby available drivers and ranks them by estimated time to pickup.
 4. It locks the best candidate and pushes them an offer. A decline or a timeout moves on to the next driver.
-5. On acceptance, the Ride Service assigns the driver with a conditional write. This write, not the lock, is what guarantees a ride is never assigned twice.
+5. On acceptance, the Ride Service assigns the driver with a conditional write. This write, not the lock, is what guarantees a ride is never assigned twice, and a unique index guarantees a driver never holds two active rides.
+6. If the assigned driver cancels, the ride returns to matching and the rider is rematched automatically, up to a fixed number of attempts.
 
 ## Design Decisions
 
