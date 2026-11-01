@@ -42,3 +42,6 @@ dist/
 .idea/
 .DS_Store
 *.log
+
+# Local working docs (not published)
+docs/
