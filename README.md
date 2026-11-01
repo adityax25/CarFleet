@@ -122,10 +122,12 @@ Planned architecture for the development environment:
 ### Completed
 
 - Repository initialized
+- Domain model and ride state machine
+- API contracts in Protocol Buffers, with REST mappings for the public API, linted with Buf
 
 ### In Progress
 
-- Foundation: architecture records, domain model, ride state machine, and API contracts
+- Service skeletons and CI builds
 
 ### Upcoming
 

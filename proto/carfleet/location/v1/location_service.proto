@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+package carfleet.location.v1;
+
+import "carfleet/common/v1/common.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+// Tracks live driver positions and answers proximity queries.
+//
+// Driver-facing methods identify the caller from the authenticated user ID
+// that the edge proxy forwards as request metadata, never from the request
+// body. Methods without an HTTP mapping are internal and unreachable from the
+// public API.
+service LocationService {
+  // Records the calling driver's current position. Online drivers call this
+  // every few seconds.
+  rpc UpdateLocation(UpdateLocationRequest) returns (UpdateLocationResponse) {
+    option (google.api.http) = {
+      post: "/v1/drivers/me/location"
+      body: "*"
+    };
+  }
+
+  // Takes the calling driver online or offline. Only online drivers that are
+  // not on a trip appear in proximity results.
+  rpc SetAvailability(SetAvailabilityRequest) returns (SetAvailabilityResponse) {
+    option (google.api.http) = {
+      put: "/v1/drivers/me/availability"
+      body: "*"
+    };
+  }
+
+  // Internal. Returns available drivers near a point, nearest first by
+  // straight-line distance.
+  rpc FindNearby(FindNearbyRequest) returns (FindNearbyResponse);
+
+  // Internal. Removes a driver from proximity results while on a trip and
+  // restores them afterwards. Called by the Ride Service.
+  rpc SetDriverBusy(SetDriverBusyRequest) returns (SetDriverBusyResponse);
+}
+
+message UpdateLocationRequest {
+  carfleet.common.v1.LatLng position = 1;
+  // Direction of travel, degrees clockwise from north, range [0, 360).
+  float heading_degrees = 2;
+  float speed_meters_per_second = 3;
+  // When the device recorded the position. Updates older than the driver's
+  // latest recorded position are discarded.
+  google.protobuf.Timestamp recorded_at = 4;
+}
+
+message UpdateLocationResponse {}
+
+message SetAvailabilityRequest {
+  bool online = 1;
+}
+
+message SetAvailabilityResponse {}
+
+message FindNearbyRequest {
+  carfleet.common.v1.LatLng center = 1;
+  // Search radius. The service caps this at a configured maximum.
+  double radius_meters = 2;
+  // Maximum number of drivers to return.
+  int32 limit = 3;
+}
+
+message FindNearbyResponse {
+  repeated NearbyDriver drivers = 1;
+}
+
+message NearbyDriver {
+  string driver_id = 1;
+  carfleet.common.v1.LatLng position = 2;
+  double distance_meters = 3;
+  float heading_degrees = 4;
+}
+
+message SetDriverBusyRequest {
+  string driver_id = 1;
+  bool busy = 2;
+}
+
+message SetDriverBusyResponse {}

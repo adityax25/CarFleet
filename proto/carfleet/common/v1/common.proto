@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package carfleet.common.v1;
+
+// A point on the Earth's surface in WGS 84 degrees.
+message LatLng {
+  // Range [-90, 90].
+  double latitude = 1;
+  // Range [-180, 180].
+  double longitude = 2;
+}
+
+// An amount of money in the smallest unit of its currency, so that
+// arithmetic is exact. USD 12.34 is amount_minor = 1234.
+message Money {
+  int64 amount_minor = 1;
+  // ISO 4217 code, for example "USD".
+  string currency_code = 2;
+}

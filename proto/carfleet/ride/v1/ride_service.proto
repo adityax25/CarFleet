@@ -1,0 +1,267 @@
+syntax = "proto3";
+
+package carfleet.ride.v1;
+
+import "carfleet/common/v1/common.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+// Owns fare quotes and the ride lifecycle.
+//
+// Every state change is a conditional write against the ride's current
+// state, so concurrent or retried calls cannot move a ride backwards or
+// assign it twice. The caller's identity and role (rider or driver) come from
+// the authenticated user ID forwarded by the edge proxy. Methods without an
+// HTTP mapping are internal and called only by the Matching Service.
+service RideService {
+  // Prices a trip. The quote is stored server side and expires, so a ride is
+  // always charged the quoted price and never a price supplied by the client.
+  rpc CreateQuote(CreateQuoteRequest) returns (CreateQuoteResponse) {
+    option (google.api.http) = {
+      post: "/v1/quotes"
+      body: "*"
+    };
+  }
+
+  // Requests a ride from an unexpired quote and queues it for matching.
+  rpc RequestRide(RequestRideRequest) returns (RequestRideResponse) {
+    option (google.api.http) = {
+      post: "/v1/rides"
+      body: "*"
+    };
+  }
+
+  rpc GetRide(GetRideRequest) returns (GetRideResponse) {
+    option (google.api.http) = {get: "/v1/rides/{ride_id}"};
+  }
+
+  // Cancels on behalf of the caller. A rider cancellation, or a driver
+  // reporting a no-show, ends the ride. Any other driver cancellation returns
+  // the ride to matching.
+  rpc CancelRide(CancelRideRequest) returns (CancelRideResponse) {
+    option (google.api.http) = {
+      post: "/v1/rides/{ride_id}:cancel"
+      body: "*"
+    };
+  }
+
+  // Driver accepts the offer currently open on the ride.
+  rpc AcceptOffer(AcceptOfferRequest) returns (AcceptOfferResponse) {
+    option (google.api.http) = {
+      post: "/v1/rides/{ride_id}:accept"
+      body: "*"
+    };
+  }
+
+  // Driver declines the offer currently open on the ride.
+  rpc DeclineOffer(DeclineOfferRequest) returns (DeclineOfferResponse) {
+    option (google.api.http) = {
+      post: "/v1/rides/{ride_id}:decline"
+      body: "*"
+    };
+  }
+
+  // Driver has reached the pickup point.
+  rpc MarkArrived(MarkArrivedRequest) returns (MarkArrivedResponse) {
+    option (google.api.http) = {
+      post: "/v1/rides/{ride_id}:arrive"
+      body: "*"
+    };
+  }
+
+  // Rider is on board and the trip begins.
+  rpc StartTrip(StartTripRequest) returns (StartTripResponse) {
+    option (google.api.http) = {
+      post: "/v1/rides/{ride_id}:start"
+      body: "*"
+    };
+  }
+
+  // Rider has been dropped off.
+  rpc CompleteTrip(CompleteTripRequest) returns (CompleteTripResponse) {
+    option (google.api.http) = {
+      post: "/v1/rides/{ride_id}:complete"
+      body: "*"
+    };
+  }
+
+  // Internal. Moves a ride into matching for the given attempt.
+  rpc BeginMatching(BeginMatchingRequest) returns (BeginMatchingResponse);
+
+  // Internal. Opens an offer to one driver for the current attempt. At most
+  // one offer is open on a ride at a time.
+  rpc CreateOffer(CreateOfferRequest) returns (CreateOfferResponse);
+
+  // Internal. Ends matching when no driver could be found.
+  rpc FailMatching(FailMatchingRequest) returns (FailMatchingResponse);
+}
+
+enum RideStatus {
+  RIDE_STATUS_UNSPECIFIED = 0;
+  RIDE_STATUS_REQUESTED = 1;
+  RIDE_STATUS_MATCHING = 2;
+  RIDE_STATUS_DRIVER_ASSIGNED = 3;
+  RIDE_STATUS_DRIVER_ARRIVED = 4;
+  RIDE_STATUS_IN_PROGRESS = 5;
+  RIDE_STATUS_COMPLETED = 6;
+  RIDE_STATUS_CANCELLED = 7;
+  RIDE_STATUS_NO_DRIVERS_FOUND = 8;
+}
+
+enum CancelReason {
+  CANCEL_REASON_UNSPECIFIED = 0;
+  // The rider withdrew the request. Ends the ride.
+  CANCEL_REASON_RIDER_REQUESTED = 1;
+  // The assigned driver withdrew. The ride returns to matching.
+  CANCEL_REASON_DRIVER_REQUESTED = 2;
+  // The rider did not appear at pickup. Ends the ride.
+  CANCEL_REASON_RIDER_NO_SHOW = 3;
+}
+
+message Quote {
+  string quote_id = 1;
+  carfleet.common.v1.LatLng pickup = 2;
+  carfleet.common.v1.LatLng dropoff = 3;
+  // Estimated route distance and duration used for pricing.
+  int64 distance_meters = 4;
+  int64 duration_seconds = 5;
+  // Demand multiplier applied to the fare. 1.0 means no surge.
+  double surge_multiplier = 6;
+  carfleet.common.v1.Money fare = 7;
+  google.protobuf.Timestamp expires_at = 8;
+}
+
+message Offer {
+  string offer_id = 1;
+  string driver_id = 2;
+  google.protobuf.Timestamp expires_at = 3;
+}
+
+message Ride {
+  string ride_id = 1;
+  string rider_id = 2;
+  string quote_id = 3;
+  RideStatus status = 4;
+  carfleet.common.v1.LatLng pickup = 5;
+  carfleet.common.v1.LatLng dropoff = 6;
+  carfleet.common.v1.Money fare = 7;
+  // Set once a driver is assigned.
+  string driver_id = 8;
+  // Matching attempt, starting at 1 and increasing on each rematch.
+  int32 attempt = 9;
+  // The offer awaiting a driver's answer, if any.
+  Offer open_offer = 10;
+  CancelReason cancel_reason = 11;
+  google.protobuf.Timestamp requested_at = 12;
+  google.protobuf.Timestamp assigned_at = 13;
+  google.protobuf.Timestamp arrived_at = 14;
+  google.protobuf.Timestamp started_at = 15;
+  google.protobuf.Timestamp completed_at = 16;
+  google.protobuf.Timestamp cancelled_at = 17;
+}
+
+message CreateQuoteRequest {
+  carfleet.common.v1.LatLng pickup = 1;
+  carfleet.common.v1.LatLng dropoff = 2;
+}
+
+message CreateQuoteResponse {
+  Quote quote = 1;
+}
+
+message RequestRideRequest {
+  string quote_id = 1;
+  // Client-generated UUID that makes the request idempotent: a retry with
+  // the same request_id returns the original ride instead of creating
+  // another.
+  string request_id = 2;
+}
+
+message RequestRideResponse {
+  Ride ride = 1;
+}
+
+message GetRideRequest {
+  string ride_id = 1;
+}
+
+message GetRideResponse {
+  Ride ride = 1;
+}
+
+message CancelRideRequest {
+  string ride_id = 1;
+  CancelReason reason = 2;
+}
+
+message CancelRideResponse {
+  Ride ride = 1;
+}
+
+message AcceptOfferRequest {
+  string ride_id = 1;
+  string offer_id = 2;
+}
+
+message AcceptOfferResponse {
+  Ride ride = 1;
+}
+
+message DeclineOfferRequest {
+  string ride_id = 1;
+  string offer_id = 2;
+}
+
+message DeclineOfferResponse {}
+
+message MarkArrivedRequest {
+  string ride_id = 1;
+}
+
+message MarkArrivedResponse {
+  Ride ride = 1;
+}
+
+message StartTripRequest {
+  string ride_id = 1;
+}
+
+message StartTripResponse {
+  Ride ride = 1;
+}
+
+message CompleteTripRequest {
+  string ride_id = 1;
+}
+
+message CompleteTripResponse {
+  Ride ride = 1;
+}
+
+message BeginMatchingRequest {
+  string ride_id = 1;
+  int32 attempt = 2;
+}
+
+message BeginMatchingResponse {
+  Ride ride = 1;
+}
+
+message CreateOfferRequest {
+  string ride_id = 1;
+  int32 attempt = 2;
+  string driver_id = 3;
+}
+
+message CreateOfferResponse {
+  Offer offer = 1;
+}
+
+message FailMatchingRequest {
+  string ride_id = 1;
+  int32 attempt = 2;
+}
+
+message FailMatchingResponse {
+  Ride ride = 1;
+}

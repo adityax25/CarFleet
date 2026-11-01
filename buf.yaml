@@ -1,0 +1,14 @@
+version: v2
+modules:
+  - path: proto
+lint:
+  use:
+    - STANDARD
+  # Vendored upstream definitions follow Google's own conventions.
+  ignore:
+    - proto/google
+breaking:
+  use:
+    - FILE
+  ignore:
+    - proto/google

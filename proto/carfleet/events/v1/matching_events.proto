@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package carfleet.events.v1;
+
+import "carfleet/common/v1/common.proto";
+import "google/protobuf/timestamp.proto";
+
+// Messages carried on the RabbitMQ matching queues.
+//
+// Delivery is at least once, so every consumer must be idempotent. Each
+// message carries the ride's matching attempt, and consumers discard
+// messages from an attempt that is no longer current.
+
+// Published by the Ride Service when a ride needs a driver, either for the
+// first time or after a driver cancellation.
+message MatchRequested {
+  string ride_id = 1;
+  int32 attempt = 2;
+  carfleet.common.v1.LatLng pickup = 3;
+  google.protobuf.Timestamp requested_at = 4;
+}
+
+// Published when an offer is opened, with a time to live equal to the offer
+// window. It dead-letters back to the matching queue on expiry, which is how
+// unanswered offers time out.
+message OfferExpired {
+  string ride_id = 1;
+  int32 attempt = 2;
+  string offer_id = 3;
+  string driver_id = 4;
+}
+
+// Published by the Ride Service when a driver declines, so matching moves on
+// without waiting for the offer to expire.
+message OfferDeclined {
+  string ride_id = 1;
+  int32 attempt = 2;
+  string offer_id = 3;
+  string driver_id = 4;
+}

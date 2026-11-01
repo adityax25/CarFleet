@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package carfleet.push.v1;
+
+import "carfleet/common/v1/common.proto";
+import "carfleet/ride/v1/ride_service.proto";
+import "google/protobuf/timestamp.proto";
+
+// Delivers server-initiated events to connected rider and driver apps over
+// their WebSocket connection. Internal only: services call it, apps never do.
+service PushService {
+  rpc Deliver(DeliverRequest) returns (DeliverResponse);
+}
+
+message DeliverRequest {
+  string user_id = 1;
+  PushEvent event = 2;
+}
+
+message DeliverResponse {
+  // False when the user has no open connection. Delivery is best effort;
+  // apps recover current state through the public API after reconnecting.
+  bool delivered = 1;
+}
+
+// The envelope sent to apps, serialized as JSON on the WebSocket.
+message PushEvent {
+  string event_id = 1;
+  google.protobuf.Timestamp sent_at = 2;
+  oneof payload {
+    RideOfferEvent ride_offer = 3;
+    RideUpdatedEvent ride_updated = 4;
+    DriverPositionEvent driver_position = 5;
+  }
+}
+
+// Sent to a driver: a ride is offered and awaits an answer before expiry.
+message RideOfferEvent {
+  string ride_id = 1;
+  carfleet.ride.v1.Offer offer = 2;
+  carfleet.common.v1.LatLng pickup = 3;
+  carfleet.common.v1.LatLng dropoff = 4;
+  carfleet.common.v1.Money fare = 5;
+}
+
+// Sent to the rider and driver of a ride whenever its state changes.
+message RideUpdatedEvent {
+  carfleet.ride.v1.Ride ride = 1;
+}
+
+// Sent to a rider while their driver approaches and during the trip.
+message DriverPositionEvent {
+  string ride_id = 1;
+  carfleet.common.v1.LatLng position = 2;
+  float heading_degrees = 3;
+  int64 eta_seconds = 4;
+}
