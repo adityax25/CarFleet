@@ -99,7 +99,7 @@ Planned architecture for the development environment:
 | **Geo index sharded by H3 cell** | A Redis geospatial set is a single key and therefore lives on a single shard. Splitting it per H3 cell spreads drivers across the cluster, and a nearby search reads only the rider's cell and its neighbors. |
 | **The lock is an optimization, the database is the guarantee** | Offer locks expire, and a paused process can outlive its lock. Ride assignment is a conditional write on the ride's current state, which fences out any stale matcher. |
 | **One contract, two protocols** | External REST endpoints are generated from the same Protocol Buffer definitions as the internal gRPC services, so the public API cannot drift from the internal one. |
-| **Cloud native and cost aware** | Everything runs on AWS from day one, with no local environment. The development environment uses ECS on Graviton EC2 with Spot capacity and avoids fixed-cost services such as NAT Gateways and load balancers. |
+| **Cloud native and cost aware** | Everything runs on AWS from day one, with no local environment. The development environment uses ECS on Graviton EC2 and avoids fixed-cost services such as NAT Gateways and load balancers. |
 
 ## Tech Stack
 
@@ -112,9 +112,9 @@ Planned architecture for the development environment:
 | **Cold storage** | MongoDB Atlas |
 | **Messaging** | RabbitMQ (quorum queues, dead-letter exchanges) |
 | **Auth** | Amazon Cognito |
-| **Compute** | Amazon ECS on EC2 (Graviton, Spot), ECS Service Connect |
+| **Compute** | Amazon ECS on EC2 (Graviton), ECS Service Connect |
 | **Edge** | Amazon CloudFront, Envoy |
-| **Infrastructure as code** | Terraform |
+| **Infrastructure as code** | Terraform, with versioned and locked remote state in S3 |
 | **CI/CD** | GitHub Actions, Amazon ECR |
 | **Observability** | OpenTelemetry, Prometheus, Grafana, Jaeger |
 | **Routing (optional)** | OSRM |
@@ -127,11 +127,13 @@ Planned architecture for the development environment:
 - Domain model and ride state machine
 - API contracts in Protocol Buffers, with REST mappings for the public API, linted with Buf
 - Service skeletons: every service builds against the contracts and serves the standard gRPC health protocol
-- CI on arm64 runners: contract lint and breaking change checks, Rust format, lint, and tests, C++ build and tests, and container images
+- CI on arm64 runners: contract lint and breaking change checks, Rust format, lint, and tests, C++ build and tests, container images, and Terraform validation
+- AWS cost guardrails: monthly and daily budgets on gross usage
+- Terraform remote state: versioned, encrypted S3 bucket with native state locking
 
 ### In Progress
 
-- AWS foundation: cost guardrails, networking, ECS cluster, and CI driven deployments
+- AWS foundation: networking, ECS cluster, and CI driven deployments
 
 ### Upcoming
 
@@ -146,7 +148,7 @@ Planned architecture for the development environment:
 
 ## Getting Started
 
-CarFleet runs entirely on AWS and is provisioned with Terraform through GitHub Actions; nothing runs locally. Setup instructions will be added once the development environment can be provisioned.
+CarFleet runs entirely on AWS and is provisioned with Terraform; nothing runs locally. Setup instructions will be added once the development environment can be provisioned.
 
 ## License
 

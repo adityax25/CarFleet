@@ -54,6 +54,24 @@ jobs:
       - name: Test
         run: cargo test --workspace --locked
 
+  terraform:
+    name: Terraform
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: "1.14.4"
+      - name: Format
+        run: terraform fmt -check -recursive infra
+      # Validation needs no AWS access, so the backend is skipped.
+      - name: Validate
+        run: |
+          for stack in infra/bootstrap; do
+            terraform -chdir="${stack}" init -backend=false -input=false
+            terraform -chdir="${stack}" validate
+          done
+
   images:
     name: Image ${{ matrix.service }}
     runs-on: ubuntu-24.04-arm
